@@ -3,10 +3,12 @@ package fr.adamaq01.networkapi.client;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import fr.adamaq01.networkapi.objects.ClientHandler;
 import fr.adamaq01.networkapi.objects.HostInfos;
 import fr.adamaq01.networkapi.packets.ConnectPacket;
 import fr.adamaq01.networkapi.packets.Packet;
@@ -19,6 +21,8 @@ public abstract class Client implements Runnable {
 	private HostInfos infos;
 	private ObjectMapper mapper;
 	private int protocol;
+
+	private ArrayList<ClientHandler> handlers = new ArrayList<>();
 
 	public Client(String name, HostInfos infos, int protocol) {
 		this.thread = new Thread(this);
@@ -44,6 +48,9 @@ public abstract class Client implements Runnable {
 
 					Packet packet = mapper.readValue(serialized, clazz);
 					onPacketReceive(packet);
+					for(ClientHandler handler : handlers) {
+					    handler.onPacketReceive(packet);
+                    }
 					if (packet instanceof DisconnectPacket) {
 						socket.close();
 						thread.stop();
@@ -55,16 +62,20 @@ public abstract class Client implements Runnable {
 		}
 	}
 
-	public void sendPacket(Packet packet) throws IOException {
+	public void sendPacket(Packet packet) {
 		try {
 			String serialized = mapper.writeValueAsString(packet);
 			String datas = packet.getClass().getName() + ":" + serialized;
 			socket.getOutputStream().write(datas.getBytes());
 			socket.getOutputStream().flush();
-		} catch (JsonProcessingException e) {
-			socket.close();
-		}
-	}
+		} catch (IOException e) {
+            try {
+                socket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
 
 	public void connect() {
 		try {
@@ -86,6 +97,22 @@ public abstract class Client implements Runnable {
 		}
 	}
 
+	public void disconnect() {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        thread.stop();
+    }
+
 	public abstract void onPacketReceive(Packet packet);
 
+	public void addHandler(ClientHandler handler) {
+        handlers.add(handler);
+    }
+
+    public ArrayList<ClientHandler> getHandlers() {
+        return handlers;
+    }
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.adamaq01.networkapi.objects.Connection;
+import fr.adamaq01.networkapi.objects.ServerHandler;
 
 public class ConnectThread implements Runnable {
 
@@ -35,6 +36,9 @@ public class ConnectThread implements Runnable {
 					server.getConsole().info(
 							socket.getInetAddress().getHostAddress() + ":" + socket.getPort() + " has connected !");
 					server.onConnect(connection);
+					for(ServerHandler handler : server.getHandlers()) {
+						handler.onConnect(connection);
+					}
 				}
 			} catch (IOException e) {
 			}

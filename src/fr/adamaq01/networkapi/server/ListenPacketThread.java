@@ -3,6 +3,7 @@ package fr.adamaq01.networkapi.server;
 import java.io.IOException;
 
 import fr.adamaq01.networkapi.objects.Connection;
+import fr.adamaq01.networkapi.objects.ServerHandler;
 import fr.adamaq01.networkapi.packets.ConnectPacket;
 import fr.adamaq01.networkapi.packets.Packet;
 import fr.adamaq01.networkapi.packets.DisconnectPacket;
@@ -44,23 +45,31 @@ public class ListenPacketThread implements Runnable {
 									message = "Server outdated !";
 								}
 								server.sendPacket(connection, new DisconnectPacket(message));
-								server.onDisconnect(server.getConnections().remove(connection.getId()));
+								server.getConnections().remove(connection.getId());
+								server.onDisconnect(connection);
+								for(ServerHandler handler : server.getHandlers()) {
+									handler.onDisconnect(connection);
+								}
 								continue;
 							}
 						} else {
 							server.onPacketReceive(server.getConnections().get(connection.getId()), packet);
+                            for(ServerHandler handler : server.getHandlers()) {
+                                handler.onPacketReceive(server.getConnections().get(connection.getId()), packet);
+                            }
+
 						}
 					}
 				} catch (Exception e) {
 					if (e instanceof ClassNotFoundException) {
-						server.getConsole()
-								.error("Un objet a été recu, mais n'hérite pas de la classe Packet ou n'existe pas !");
-						try {
-							server.sendPacket(connection, new DisconnectPacket("Un ONI à été envoyé !"));
-						} catch (IOException e1) {
-						}
+						server.getConsole().error("Un objet a été recu, mais n'hérite pas de la classe Packet ou n'existe pas !");
+						server.sendPacket(connection, new DisconnectPacket("Un ONI à été envoyé !"));
 					}
-					server.onDisconnect(server.getConnections().remove(connection.getId()));
+                    server.getConnections().remove(connection.getId());
+					server.onDisconnect(connection);
+                    for(ServerHandler handler : server.getHandlers()) {
+                        handler.onDisconnect(connection);
+                    }
 				}
 			}
 			try {

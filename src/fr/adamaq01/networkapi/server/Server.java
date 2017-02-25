@@ -2,12 +2,14 @@ package fr.adamaq01.networkapi.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.adamaq01.networkapi.objects.Connection;
 import fr.adamaq01.networkapi.objects.Console;
+import fr.adamaq01.networkapi.objects.ServerHandler;
 import fr.adamaq01.networkapi.packets.Packet;
 
 public abstract class Server implements Runnable {
@@ -24,6 +26,8 @@ public abstract class Server implements Runnable {
 	private LinkedHashMap<Integer, Connection> connected = new LinkedHashMap<>();
 	protected int connections = 0;
 
+	private ArrayList<ServerHandler> handlers = new ArrayList<>();
+
 	public Server(String name, int port, int protocol, int tps) throws IOException {
 		this.tps = tps;
 		this.thread = new Thread(this);
@@ -37,6 +41,9 @@ public abstract class Server implements Runnable {
 				if (command.equalsIgnoreCase("stop"))
 					stop();
 				Server.this.onCommand(command, args);
+				for(ServerHandler handler : handlers) {
+                    handler.onCommand(command, args);
+                }
 			}
 		};
 		this.protocol = protocol;
@@ -103,11 +110,15 @@ public abstract class Server implements Runnable {
 		return socket;
 	}
 
-	public void sendPacket(Connection connection, Packet packet) throws IOException {
-		String serialized = mapper.writeValueAsString(packet);
-		String data = packet.getClass().getName() + ":" + serialized;
-		connection.getSocket().getOutputStream().write(data.getBytes());
-		connection.getSocket().getOutputStream().flush();
+	public void sendPacket(Connection connection, Packet packet) {
+		try {
+			String serialized = mapper.writeValueAsString(packet);
+			String data = packet.getClass().getName() + ":" + serialized;
+			connection.getSocket().getOutputStream().write(data.getBytes());
+			connection.getSocket().getOutputStream().flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public abstract void onCommand(String command, String[] args);
@@ -118,4 +129,11 @@ public abstract class Server implements Runnable {
 
 	public abstract void onDisconnect(Connection connection);
 
+	public void addHandler(ServerHandler handler) {
+	    handlers.add(handler);
+    }
+
+    public ArrayList<ServerHandler> getHandlers() {
+        return handlers;
+    }
 }

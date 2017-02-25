@@ -12,6 +12,11 @@ import java.io.IOException;
  */
 public class TestServer extends Server {
 
+    public static void main(String[] args) throws IOException {
+        TestServer server = new TestServer();
+        server.start();
+    }
+
     public TestServer() throws IOException {
         super("TestServer", 9063, 4, 128);
     }
@@ -24,11 +29,7 @@ public class TestServer extends Server {
     @Override
     public void onPacketReceive(Connection connection, Packet packet) {
         if(packet instanceof TextPacket) {
-            try {
-                sendPacket(connection, new TextPacket("Nice text!"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            sendPacket(connection, new TextPacket("Nice text!"));
         }
     }
 
