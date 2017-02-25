@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/src/fr/adamaq01/networkapi/client/Client.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/fr/adamaq01/networkapi/objects/Console.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/fr/adamaq01/networkapi/server/ListenPacketThread.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/fr/adamaq01/networkapi/server/Server.java" charset="ISO-8859-1" />
+  </component>
+</project>
