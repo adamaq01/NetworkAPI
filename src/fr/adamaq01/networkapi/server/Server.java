@@ -105,8 +105,8 @@ public abstract class Server implements Runnable {
 
 	public void sendPacket(Connection connection, Packet packet) throws IOException {
 		String serialized = mapper.writeValueAsString(packet);
-		String datas = packet.getClass().getName() + ":" + serialized;
-		connection.getSocket().getOutputStream().write(datas.getBytes());
+		String data = packet.getClass().getName() + ":" + serialized;
+		connection.getSocket().getOutputStream().write(data.getBytes());
 		connection.getSocket().getOutputStream().flush();
 	}
 
